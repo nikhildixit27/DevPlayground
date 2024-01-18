@@ -14,14 +14,17 @@ const pusher = new Pusher({
     useTLS: true,
 });
 
-// pusher.trigger("my-channel", "my-event", {
-//     message: "hello world"
-// });
-
 app.use(cors());
-// Middlewares - to parse JSON and URL encoded request bodies
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+app.post("/update-editor", (req, res) => {
+    pusher.trigger("editor", "text-update", {
+        ...req.body,
+    });
+
+    res.status(200).send("OK");
+});
 
 const server = app.listen(port, () => {
     console.log(`Express server is running on PORT ${port}`);
