@@ -3,26 +3,31 @@ import { Controlled as CodeMirror } from "react-codemirror2";
 import Pusher from "pusher-js";
 import pushid from "pushid";
 import axios from "axios";
+import Header from './components/Header';
 
 import "./App.css";
-import "codemirror/lib/codemirror.css";
-import "codemirror/theme/material.css";
 
 import "codemirror/mode/htmlmixed/htmlmixed";
-import "codemirror/mode/css/css";
+import "codemirror/lib/codemirror.css";
+import "codemirror/theme/material.css";
+import "codemirror/mode/xml/xml";
 import "codemirror/mode/javascript/javascript";
+import "codemirror/mode/css/css";
 
 function App() {
   const [id, setId] = useState("");
   const [html, setHtml] = useState("");
   const [css, setCss] = useState("");
   const [js, setJs] = useState("");
+  const [showPreview, setShowPreview] = useState(false);
 
   const iframeRef = useRef(null);
 
   useEffect(() => {
     setId(pushid());
+  }, []);
 
+  useEffect(() => {
     const pusher = new Pusher("9b387ef6c7edfb8f29b8", {
       cluster: "eu",
       forceTLS: true,
@@ -30,16 +35,18 @@ function App() {
 
     const channel = pusher.subscribe("editor");
 
-    channel.bind("text-update", (data) => {
+    const handleTextUpdate = (data) => {
       if (data.id === id) return;
 
       setHtml(data.html);
       setCss(data.css);
       setJs(data.js);
-    });
+    };
+
+    channel.bind("text-update", handleTextUpdate);
 
     return () => {
-      channel.unbind("text-update");
+      channel.unbind("text-update", handleTextUpdate);
       pusher.unsubscribe("editor");
     };
   }, [id]);
@@ -88,6 +95,7 @@ function App() {
     lineNumbers: true,
     scrollbarStyle: null,
     lineWrapping: true,
+    lint: true,
   };
 
   const htmlCodeMirrorRef = useRef(null);
@@ -95,12 +103,15 @@ function App() {
   const jsCodeMirrorRef = useRef(null);
 
   const editorWillUnmount = (editor, codeMirror) => {
-    const wrapper = codeMirror.getWrapperElement();
-    wrapper.parentNode.removeChild(wrapper);
+    // Check if codeMirror is defined before trying to call setValue
+    if (codeMirror && codeMirror.current) {
+      codeMirror.current.setValue('');
+    }
   };
 
   return (
-    <div className="App">
+    <div className={`App ${showPreview ? 'show-preview' : ''}`}>
+      <Header togglePreview={() => setShowPreview((prev) => !prev)} showPreview={showPreview} />
       <section className="playground">
         <div className="code-editor html-code">
           <div className="editor-header">HTML</div>
@@ -114,7 +125,8 @@ function App() {
               setHtml(html);
               syncUpdates();
             }}
-            editorWillUnmount={(editor) => editorWillUnmount(editor, htmlCodeMirrorRef.current)}
+
+            editorWillUnmount={(editor, codeMirror) => editorWillUnmount(editor, codeMirror)}
             ref={htmlCodeMirrorRef}
           />
         </div>
@@ -130,7 +142,7 @@ function App() {
               setCss(css);
               syncUpdates();
             }}
-            editorWillUnmount={(editor) => editorWillUnmount(editor, cssCodeMirrorRef.current)}
+            editorWillUnmount={(editor, codeMirror) => editorWillUnmount(editor, codeMirror)}
             ref={cssCodeMirrorRef}
           />
         </div>
@@ -146,7 +158,7 @@ function App() {
               setJs(js);
               syncUpdates();
             }}
-            editorWillUnmount={(editor) => editorWillUnmount(editor, jsCodeMirrorRef.current)}
+            editorWillUnmount={(editor, codeMirror) => editorWillUnmount(editor, codeMirror)}
             ref={jsCodeMirrorRef}
           />
         </div>

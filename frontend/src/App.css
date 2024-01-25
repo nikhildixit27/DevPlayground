@@ -11,10 +11,43 @@ html {
 }
 
 body {
-  margin: 0; /* Reset default body margin */
+  margin: 0;
+}
+
+/* header CSS */
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background-color: aliceblue;
+  color: #2a2a35;
+  border-bottom: 3px solid black;
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.user-controls button {
+  margin-left: 10px;
+  padding: 5px 10px;
+  cursor: pointer;
+  background-color: #3498db;
+  color: #fff;
+  border: none;
+  border-radius: 3px;
+  outline: none;
+}
+
+.user-controls button:hover {
+  background-color: #2980b9;
 }
 
 .playground {
+  margin-top: 50px;
   position: fixed;
   top: 0;
   bottom: 0;
@@ -47,6 +80,7 @@ body {
 }
 
 .result {
+  margin-top: 50px;
   position: fixed;
   top: 0;
   right: 0;
