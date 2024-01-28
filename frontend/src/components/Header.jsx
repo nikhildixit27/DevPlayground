@@ -1,25 +1,44 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { FaSignInAlt, FaSignOutAlt, FaUser } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../auth/AuthContext';
 
-function Header({ togglePreview, showPreview }) {
-    const [isLoggedIn, setLoggedIn] = useState(false);
-
-    const toggleLogin = () => {
-        setLoggedIn((prevState) => !prevState);
-    };
+function Header() {
+    const { isLoggedIn, logout } = useAuth();
 
     return (
-        <header>
-            <div className="logo">DevPlayground</div>
-
-            <div className="user-controls">
-                <button onClick={togglePreview}>
-                    {showPreview ? 'Hide Preview' : 'Show Preview'}
-                </button>
-
-                <button onClick={toggleLogin}>
-                    {isLoggedIn ? 'Logout' : 'Login'}
-                </button>
+        <header className="header">
+            <div className="logo">
+                <Link to="/">DevPlayground</Link>
             </div>
+
+            <nav>
+                <ul className="nav-list">
+                    {!isLoggedIn ? (
+                        <>
+                            <li>
+                                <Link to="/login" className="nav-link">
+                                    <FaSignInAlt /> Login
+                                </Link>
+                            </li>
+                            <li>
+                                <Link to="/register" className="nav-link">
+                                    <FaUser /> Register
+                                </Link>
+                            </li>
+                        </>
+                    ) : (
+                        <li>
+                            <Link to="/" className="nav-link" onClick={logout}>
+                                <FaSignOutAlt /> Logout
+                            </Link>
+                            {/* <button className="btn" onClick={logout}>
+                                <FaSignOutAlt /> Logout
+                            </button> */}
+                        </li>
+                    )}
+                </ul>
+            </nav>
         </header>
     );
 }
