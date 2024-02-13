@@ -16,7 +16,7 @@ const protect = asyncHandler(async (req, res, next) => {
 
             // get user from the token
             req.user = await User.findById(decoded.id).select("-password");
-            
+
             // Calling next Middleware
             next();
         } catch (error) {

@@ -14,7 +14,7 @@ function Header() {
 
             <nav>
                 <ul className="nav-list">
-                    {!isLoggedIn ? (
+                    {!(localStorage.getItem("token") !== undefined && localStorage.getItem("token") !== null) ? (
                         <>
                             <li>
                                 <Link to="/login" className="nav-link">

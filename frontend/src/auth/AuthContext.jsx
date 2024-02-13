@@ -11,12 +11,15 @@ export const AuthProvider = ({ children }) => {
     };
 
     const logout = () => {
+        localStorage.clear();
         setLoggedIn(false);
         toast.success('Logout Successful');
     };
 
+    const nikhilKaLogin = localStorage.getItem("token") !== undefined && localStorage.getItem("token") !== null;
+
     return (
-        <AuthContext.Provider value={{ isLoggedIn, login, logout }}>
+        <AuthContext.Provider value={{nikhilKaLogin , login, logout }}>
             {children}
         </AuthContext.Provider>
     );

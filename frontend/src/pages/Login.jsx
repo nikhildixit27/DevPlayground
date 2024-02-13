@@ -18,7 +18,9 @@ function Login() {
   const { email, password } = formData;
 
   const onChange = (e) => {
+    // console.log(e);
     setFormData((prevState) => ({
+      
       ...prevState,
       [e.target.name]: e.target.value,
     }));
@@ -45,9 +47,11 @@ function Login() {
       const data = await response.json();
 
       if (response.ok) {
+        localStorage.setItem("id", data._id);
+        localStorage.setItem("token", data.token);
         toast.success('Login successful');
-        login(); // Call the login function to update the authentication state
-        navigate('/'); // Redirect to the home page
+        login();
+        navigate('/');
       } else {
         toast.error(data.message || 'Login failed');
       }

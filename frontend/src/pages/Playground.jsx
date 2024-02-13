@@ -3,6 +3,8 @@ import { Controlled as CodeMirror } from "react-codemirror2";
 import Pusher from "pusher-js";
 import pushid from "pushid";
 import axios from "axios";
+import { useAuth } from '../auth/AuthContext';
+import { toast } from 'react-toastify';
 // import Header from './components/Header';
 
 // import "./App.css";
@@ -20,20 +22,21 @@ function Playground() {
     const [css, setCss] = useState("");
     const [js, setJs] = useState("");
     const [showPreview, setShowPreview] = useState(false);
+    const { isLoggedIn } = useAuth();
 
     const iframeRef = useRef(null);
 
-    useEffect(() => {
-        setId(pushid());
-    }, []);
+    // useEffect(() => {
+    //     setId(pushid());
+    // }, []);
 
     useEffect(() => {
-        const pusher = new Pusher("9b387ef6c7edfb8f29b8", {
-            cluster: "eu",
-            forceTLS: true,
-        });
+        // const pusher = new Pusher("9b387ef6c7edfb8f29b8", {
+        //     cluster: "eu",
+        //     forceTLS: true,
+        // });
 
-        const channel = pusher.subscribe("editor");
+        // const channel = pusher.subscribe("editor");
 
         const handleTextUpdate = (data) => {
             if (data.id === id) return;
@@ -43,46 +46,52 @@ function Playground() {
             setJs(data.js);
         };
 
-        channel.bind("text-update", handleTextUpdate);
+        // channel.bind("text-update", handleTextUpdate);
 
-        return () => {
-            channel.unbind("text-update", handleTextUpdate);
-            pusher.unsubscribe("editor");
-        };
+        // return () => {
+        //     channel.unbind("text-update", handleTextUpdate);
+        //     pusher.unsubscribe("editor");
+        // };
     }, [id]);
 
     useEffect(() => {
         runCode();
     }, [html, css, js]);
 
-    const syncUpdates = () => {
-        const data = { id, html, css, js };
+    // const syncUpdates = () => {
+    //     const data = { id, html, css, js };
 
-        axios.post("http://localhost:5000/update-editor", data).catch(console.error);
-    };
+    //     const config = {
+    //         headers: {
+    //             Authorization: `Bearer ${JSON.parse(localStorage.user).token}`,
+    //         },
+    //     }
+
+    //     axios.post("http://localhost:5000/update-editor", data, config).catch(console.error);
+    // };
 
     const runCode = () => {
         const document = iframeRef.current.contentDocument;
         const documentContents = `
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
         <title>Document</title>
         <style>
-          ${css}
+            ${css}
         </style>
-      </head>
-      <body>
+    </head>
+    <body>
         ${html}
 
         <script type="text/javascript">
-          ${js}
+            ${js}
         </script>
-      </body>
-      </html>
+    </body>
+    </html>
     `;
 
         document.open();
@@ -109,6 +118,28 @@ function Playground() {
         }
     };
 
+    const saveCode = async () => {
+        try {
+            const id = localStorage.getItem("id");
+            const config = {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+            }
+            const response = await axios.post('http://localhost:5000/api/code', { html, css, js, id }, config);
+            console.log(html, css, js, id);
+
+            if (response.status === 201) {
+                toast.success('Code saved successfully');
+            } else {
+                toast.error('Failed to save code');
+            }
+        } catch (error) {
+            console.error('Error during code save:', error);
+            toast.error('An error occurred while saving code');
+        }
+    };
+
     return (
         <div className={`App ${showPreview ? 'show-preview' : ''}`}>
             {/* <Header togglePreview={() => setShowPreview((prev) => !prev)} showPreview={showPreview} /> */}
@@ -123,7 +154,7 @@ function Playground() {
                         }}
                         onBeforeChange={(editor, data, html) => {
                             setHtml(html);
-                            syncUpdates();
+                            // syncUpdates();
                         }}
 
                         editorWillUnmount={(editor, codeMirror) => editorWillUnmount(editor, codeMirror)}
@@ -140,7 +171,7 @@ function Playground() {
                         }}
                         onBeforeChange={(editor, data, css) => {
                             setCss(css);
-                            syncUpdates();
+                            // syncUpdates();
                         }}
                         editorWillUnmount={(editor, codeMirror) => editorWillUnmount(editor, codeMirror)}
                         ref={cssCodeMirrorRef}
@@ -156,7 +187,7 @@ function Playground() {
                         }}
                         onBeforeChange={(editor, data, js) => {
                             setJs(js);
-                            syncUpdates();
+                            // syncUpdates();
                         }}
                         editorWillUnmount={(editor, codeMirror) => editorWillUnmount(editor, codeMirror)}
                         ref={jsCodeMirrorRef}
@@ -166,6 +197,13 @@ function Playground() {
             <section className="result">
                 <iframe title="result" className="iframe" ref={iframeRef} />
             </section>
+
+            {(localStorage.getItem("token") !== undefined && localStorage.getItem("token") !== null) && (
+                <button className="btn save-btn" onClick={saveCode}>
+                    Save Code
+                </button>
+            )}
+
         </div>
     );
 }

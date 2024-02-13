@@ -282,3 +282,22 @@ body {
     transform: rotate(360deg);
   }
 }
+
+.btn.save-btn {
+  position: fixed;
+  width: 100px;
+  top: 50px; /* Adjust the top distance as needed */
+  right: 1px;
+  background-color: #3498db;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: background-color 0.3s ease-in-out;
+}
+
+.btn.save-btn:hover {
+  background-color: #2980b9;
+}
+
